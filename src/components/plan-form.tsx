@@ -4,7 +4,17 @@ import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Info, PlusCircle, Trash2, File as FileIcon, UploadCloud, X } from 'lucide-react';
+import {
+  Info,
+  PlusCircle,
+  Trash2,
+  File as FileIcon,
+  UploadCloud,
+  X,
+  FileText,
+} from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import { submitPlanAction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -93,6 +103,9 @@ const formSchema = z.object({
 
 export function PlanForm() {
   const { toast } = useToast();
+  const formRef = React.useRef<HTMLFormElement>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = React.useState(false);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -134,7 +147,7 @@ export function PlanForm() {
     },
   });
 
-  const { control, formState, watch, setValue } = form;
+  const { control, formState, watch, setValue, trigger } = form;
   const financialFile = watch('financialForecastFile');
 
   const { fields, append, remove } = useFieldArray({
@@ -150,9 +163,75 @@ export function PlanForm() {
     });
   }
 
+  const handlePreview = async () => {
+    const isValid = await trigger();
+    if (!isValid) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Vui lòng điền đầy đủ thông tin bắt buộc trước khi xem trước.',
+      });
+      return;
+    }
+
+    if (formRef.current) {
+      setIsGeneratingPdf(true);
+      toast({
+        title: 'Đang tạo PDF...',
+        description: 'Vui lòng đợi trong giây lát.',
+      });
+      try {
+        const canvas = await html2canvas(formRef.current, {
+          scale: 2,
+          logging: false,
+          useCORS: true,
+          onclone: (document) => {
+            // Hide buttons and other non-printable elements in the cloned document
+            const elementsToHide = document.querySelectorAll('.no-print');
+            elementsToHide.forEach(el => (el as HTMLElement).style.display = 'none');
+          }
+        });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = imgWidth / imgHeight;
+        const width = pdfWidth;
+        const height = width / ratio;
+
+        let position = 0;
+        let heightLeft = imgHeight * pdfWidth / imgWidth;
+
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, height);
+        heightLeft -= pdfHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - (imgHeight * pdfWidth / imgWidth);
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, height);
+          heightLeft -= pdfHeight;
+        }
+        
+        pdf.save('ke-hoach-2026.pdf');
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Lỗi',
+          description: 'Không thể tạo tệp PDF. Vui lòng thử lại.',
+        });
+      } finally {
+        setIsGeneratingPdf(false);
+      }
+    }
+  };
+
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">1. Thông tin đơn vị</CardTitle>
@@ -676,7 +755,7 @@ export function PlanForm() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     onClick={() => remove(index)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -689,6 +768,7 @@ export function PlanForm() {
               type="button"
               variant="outline"
               size="sm"
+              className="no-print"
               onClick={() =>
                 append({ plan: '', lead: '', time: '', budget: '', kpi: '' })
               }
@@ -770,7 +850,7 @@ export function PlanForm() {
                 <FormItem>
                   <FormLabel>Tệp đính kèm (tùy chọn)</FormLabel>
                   <FormControl>
-                    <div className="relative">
+                    <div className="relative no-print">
                       <Input
                         type="file"
                         className="hidden"
@@ -807,7 +887,7 @@ export function PlanForm() {
                         type="button" 
                         variant="ghost" 
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-6 w-6 no-print"
                         onClick={() => setValue('financialForecastFile', null)}
                       >
                         <X className="h-4 w-4" />
@@ -854,7 +934,21 @@ export function PlanForm() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end">
+        <div className="no-print flex justify-end gap-4">
+           <Button
+            type="button"
+            variant="outline"
+            onClick={handlePreview}
+            disabled={isGeneratingPdf}
+            className="w-full sm:w-auto"
+          >
+            {isGeneratingPdf ? (
+              <Icons.spinner className="animate-spin" />
+            ) : (
+              <FileText />
+            )}
+            Xem trước kế hoạch
+          </Button>
           <Button
             type="submit"
             disabled={formState.isSubmitting}
