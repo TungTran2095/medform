@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Info } from 'lucide-react';
+import { Info, PlusCircle, Trash2 } from 'lucide-react';
 
 import { submitPlanAction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,14 @@ import {
 } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
 
+const actionPlanSchema = z.object({
+  plan: z.string(),
+  lead: z.string(),
+  time: z.string(),
+  budget: z.string(),
+  kpi: z.string(),
+});
+
 const formSchema = z.object({
   unitName: z.string().min(1, { message: 'Vui lòng nhập tên đơn vị.' }),
   unitType: z.string().min(1, { message: 'Vui lòng nhập loại đơn vị.' }),
@@ -68,31 +76,7 @@ const formSchema = z.object({
   learningKpi2: z.string(),
 
   // Action Plan Fields
-  actionPlan1: z.string(),
-  actionLead1: z.string(),
-  actionTime1: z.string(),
-  actionBudget1: z.string(),
-  actionKpi1: z.string(),
-  actionPlan2: z.string(),
-  actionLead2: z.string(),
-  actionTime2: z.string(),
-  actionBudget2: z.string(),
-  actionKpi2: z.string(),
-  actionPlan3: z.string(),
-  actionLead3: z.string(),
-  actionTime3: z.string(),
-  actionBudget3: z.string(),
-  actionKpi3: z.string(),
-  actionPlan4: z.string(),
-  actionLead4: z.string(),
-  actionTime4: z.string(),
-  actionBudget4: z.string(),
-  actionKpi4: z.string(),
-  actionPlan5: z.string(),
-  actionLead5: z.string(),
-  actionTime5: z.string(),
-  actionBudget5: z.string(),
-  actionKpi5: z.string(),
+  actionPlans: z.array(actionPlanSchema),
 
   // Financial Forecast
   projectedRevenue: z.string(),
@@ -136,31 +120,11 @@ export function PlanForm() {
       learningKpi1: '',
       learningObjective2: '',
       learningKpi2: '',
-      actionPlan1: '',
-      actionLead1: '',
-      actionTime1: '',
-      actionBudget1: '',
-      actionKpi1: '',
-      actionPlan2: '',
-      actionLead2: '',
-      actionTime2: '',
-      actionBudget2: '',
-      actionKpi2: '',
-      actionPlan3: '',
-      actionLead3: '',
-      actionTime3: '',
-      actionBudget3: '',
-      actionKpi3: '',
-      actionPlan4: '',
-      actionLead4: '',
-      actionTime4: '',
-      actionBudget4: '',
-      actionKpi4: '',
-      actionPlan5: '',
-      actionLead5: '',
-      actionTime5: '',
-      actionBudget5: '',
-      actionKpi5: '',
+      actionPlans: [
+        { plan: '', lead: '', time: '', budget: '', kpi: '' },
+        { plan: '', lead: '', time: '', budget: '', kpi: '' },
+        { plan: '', lead: '', time: '', budget: '', kpi: '' },
+      ],
       projectedRevenue: '',
       projectedCosts: '',
       projectedProfit: '',
@@ -169,7 +133,12 @@ export function PlanForm() {
     },
   });
 
-  const { formState } = form;
+  const { control, formState } = form;
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'actionPlans',
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -317,7 +286,7 @@ export function PlanForm() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-4 w-4 text-muted-foreground" />
+                    <Info className="h-4 w-4 cursor-pointer text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
@@ -339,10 +308,10 @@ export function PlanForm() {
             {/* Financial Perspective */}
             <div className="space-y-4 rounded-md border p-4">
               <h3 className="font-semibold">Góc nhìn TÀI CHÍNH</h3>
-              <p className="text-sm text-muted-foreground">
+              <FormDescription>
                 Ví dụ: Tăng doanh thu 10% so với 2025 – KPI: Tăng trưởng doanh
                 thu (%).
-              </p>
+              </FormDescription>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -406,10 +375,10 @@ export function PlanForm() {
               <h3 className="font-semibold">
                 Góc nhìn BỆNH NHÂN (KHÁCH HÀNG)
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <FormDescription>
                 Ví dụ: Nâng hài lòng người bệnh lên ≥ 90% – KPI: Điểm hài lòng
                 trung bình (%).
-              </p>
+              </FormDescription>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -471,10 +440,10 @@ export function PlanForm() {
             {/* Internal Process Perspective */}
             <div className="space-y-4 rounded-md border p-4">
               <h3 className="font-semibold">Góc nhìn QUY TRÌNH NỘI BỘ</h3>
-              <p className="text-sm text-muted-foreground">
+              <FormDescription>
                 Ví dụ: Tối ưu hóa quy trình khám bệnh - KPI: Thời gian chờ
                 khám trung bình (phút).
-              </p>
+              </FormDescription>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -536,10 +505,10 @@ export function PlanForm() {
             {/* Learning & Growth Perspective */}
             <div className="space-y-4 rounded-md border p-4">
               <h3 className="font-semibold">Góc nhìn HỌC TẬP & PHÁT TRIỂN</h3>
-              <p className="text-sm text-muted-foreground">
+              <FormDescription>
                 Ví dụ: Đào tạo 100% nhân viên về quy trình mới - KPI: Tỷ lệ
                 nhân viên hoàn thành đào tạo (%).
-              </p>
+              </FormDescription>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -603,24 +572,24 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              4. KẾ HOẠCH HÀNH ĐỘNG CHÍNH NĂM 2026 (5-7 HÀNH ĐỘNG)
+              4. KẾ HOẠCH HÀNH ĐỘNG CHÍNH NĂM 2026 (3-5 HÀNH ĐỘNG)
             </CardTitle>
             <CardDescription>
               Ghi các việc/dự án quan trọng nhất để đạt mục tiêu. Mỗi việc cần
-              rõ: ai phụ trách, thời gian, ngân sách, KPI chính.
-              Ví dụ: Triển khai hệ thống đặt lịch khám online – KPI: Tỷ lệ bệnh
-              nhân đặt lịch online (%), số ca khám qua kênh online.
+              rõ: ai phụ trách, thời gian, ngân sách, KPI chính. Ví dụ: Triển
+              khai hệ thống đặt lịch khám online – KPI: Tỷ lệ bệnh nhân đặt
+              lịch online (%), số ca khám qua kênh online.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
-            {[1, 2, 3, 4, 5].map((item, index) => (
+          <CardContent className="space-y-6">
+            {fields.map((field, index) => (
               <div
-                key={item}
-                className="space-y-4 rounded-md border p-4"
+                key={field.id}
+                className="relative space-y-4 rounded-md border p-4"
               >
                 <FormField
-                  control={form.control}
-                  name={`actionPlan${item}` as any}
+                  control={control}
+                  name={`actionPlans.${index}.plan`}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{index + 1}) Việc cần làm:</FormLabel>
@@ -633,8 +602,8 @@ export function PlanForm() {
                 />
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <FormField
-                    control={form.control}
-                    name={`actionLead${item}` as any}
+                    control={control}
+                    name={`actionPlans.${index}.lead`}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Người phụ trách:</FormLabel>
@@ -646,8 +615,8 @@ export function PlanForm() {
                     )}
                   />
                   <FormField
-                    control={form.control}
-                    name={`actionTime${item}` as any}
+                    control={control}
+                    name={`actionPlans.${index}.time`}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Thời gian:</FormLabel>
@@ -659,8 +628,8 @@ export function PlanForm() {
                     )}
                   />
                   <FormField
-                    control={form.control}
-                    name={`actionBudget${item}` as any}
+                    control={control}
+                    name={`actionPlans.${index}.budget`}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Ngân sách dự kiến:</FormLabel>
@@ -673,8 +642,8 @@ export function PlanForm() {
                   />
                 </div>
                 <FormField
-                  control={form.control}
-                  name={`actionKpi${item}` as any}
+                  control={control}
+                  name={`actionPlans.${index}.kpi`}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>KPI theo dõi:</FormLabel>
@@ -685,8 +654,31 @@ export function PlanForm() {
                     </FormItem>
                   )}
                 />
+                {fields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Xóa hành động</span>
+                  </Button>
+                )}
               </div>
             ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                append({ plan: '', lead: '', time: '', budget: '', kpi: '' })
+              }
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm hành động
+            </Button>
           </CardContent>
         </Card>
 
