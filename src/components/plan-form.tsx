@@ -38,11 +38,11 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 
 const actionPlanSchema = z.object({
-  plan: z.string(),
-  lead: z.string(),
-  time: z.string(),
-  budget: z.string(),
-  kpi: z.string(),
+  plan: z.string().min(1, { message: 'Vui lòng nhập việc cần làm.' }),
+  lead: z.string().min(1, { message: 'Vui lòng nhập người phụ trách.' }),
+  time: z.string().min(1, { message: 'Vui lòng nhập thời gian.' }),
+  budget: z.string().min(1, { message: 'Vui lòng nhập ngân sách.' }),
+  kpi: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
 });
 
 const formSchema = z.object({
@@ -58,29 +58,32 @@ const formSchema = z.object({
   threats: z.string().min(1, { message: 'Vui lòng mô tả thách thức.' }),
 
   // BSC Fields
-  financialObjective1: z.string(),
-  financialKpi1: z.string(),
-  financialObjective2: z.string(),
-  financialKpi2: z.string(),
-  customerObjective1: z.string(),
-  customerKpi1: z.string(),
-  customerObjective2: z.string(),
-  customerKpi2: z.string(),
-  internalObjective1: z.string(),
-  internalKpi1: z.string(),
-  internalObjective2: z.string(),
-  internalKpi2: z.string(),
-  learningObjective1: z.string(),
-  learningKpi1: z.string(),
-  learningObjective2: z.string(),
-  learningKpi2: z.string(),
+  financialObjective1: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  financialKpi1: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+  financialObjective2: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  financialKpi2: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+  customerObjective1: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  customerKpi1: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+  customerObjective2: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  customerKpi2: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+  internalObjective1: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  internalKpi1: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+  internalObjective2: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  internalKpi2: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+  learningObjective1: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  learningKpi1: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+  learningObjective2: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  learningKpi2: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
 
   // Action Plan Fields
   actionPlans: z.array(actionPlanSchema),
 
   // Financial Forecast
+  revenue: z.string().min(1, { message: 'Vui lòng nhập doanh thu dự kiến.' }),
+  costs: z.string().min(1, { message: 'Vui lòng nhập tổng chi phí dự kiến.' }),
+  profit: z.string().min(1, { message: 'Vui lòng nhập lợi nhuận dự kiến.' }),
+  investment: z.string().optional(),
   financialForecastFile: z.any().optional(),
-
 
   // Commitment
   commitment: z.boolean().refine((val) => val === true, {
@@ -123,6 +126,10 @@ export function PlanForm() {
         { plan: '', lead: '', time: '', budget: '', kpi: '' },
         { plan: '', lead: '', time: '', budget: '', kpi: '' },
       ],
+      revenue: '',
+      costs: '',
+      profit: '',
+      investment: '',
       commitment: false,
     },
   });
@@ -698,16 +705,70 @@ export function PlanForm() {
               5. DỰ BÁO TÀI CHÍNH NĂM 2026 (ĐƠN VỊ: VND)
             </CardTitle>
             <CardDescription>
-              Tải lên tệp dự báo tài chính của bạn (PDF, Excel, Word).
+             Ghi theo số liệu tốt nhất đơn vị ước tính, bám sát thực tế.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <FormField
+                control={control}
+                name="revenue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Doanh thu dự kiến</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="costs"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tổng chi phí dự kiến</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="profit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lợi nhuận dự kiến</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+             <FormField
+                control={control}
+                name="investment"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kế hoạch đầu tư (nếu có)</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             <FormField
               control={control}
               name="financialForecastFile"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tệp dự báo tài chính</FormLabel>
+                  <FormLabel>Tệp đính kèm (tùy chọn)</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
