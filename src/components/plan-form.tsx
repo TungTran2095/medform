@@ -290,7 +290,7 @@ export function PlanForm() {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Balanced Scorecard (BSC) là một hệ thống quản lý chiến
+                      Thẻ điểm cân bằng (BSC) là một hệ thống quản lý chiến
                       lược giúp các tổ chức xác định, đo lường và quản lý các
                       mục tiêu từ bốn góc nhìn khác nhau: Tài chính, Khách
                       hàng, Quy trình nội bộ, và Học tập & Phát triển.
@@ -300,8 +300,10 @@ export function PlanForm() {
               </TooltipProvider>
             </div>
             <CardDescription>
-              Mỗi góc nhìn vui lòng chọn 2-3 mục tiêu quan trọng nhất. Mỗi mục
-              tiêu gắn với ít nhất 1 KPI cụ thể, dễ đo lường.
+              Để xây dựng kế hoạch toàn diện, hãy xác định 2-3 mục tiêu quan
+              trọng nhất cho mỗi góc nhìn của Thẻ điểm cân bằng (BSC). Với mỗi
+              mục tiêu, hãy đề xuất một Chỉ số đo lường hiệu quả chính (KPI) cụ
+              thể, có thể định lượng và bám sát với mục tiêu đó.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
@@ -309,8 +311,10 @@ export function PlanForm() {
             <div className="space-y-4 rounded-md border p-4">
               <h3 className="font-semibold">Góc nhìn TÀI CHÍNH</h3>
               <FormDescription>
-                Ví dụ: Tăng doanh thu 10% so với 2025 – KPI: Tăng trưởng doanh
-                thu (%).
+                Các mục tiêu tài chính nhằm đảm bảo sự bền vững và tăng trưởng
+                về mặt kinh tế. Ví dụ: "Tăng doanh thu 10% so với năm 2025" với
+                KPI là "Tỷ lệ tăng trưởng doanh thu (%)", hoặc "Tối ưu hóa chi
+                phí hoạt động 5%" với KPI là "Tỷ lệ chi phí/doanh thu (%)".
               </FormDescription>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
@@ -376,8 +380,11 @@ export function PlanForm() {
                 Góc nhìn BỆNH NHÂN (KHÁCH HÀNG)
               </h3>
               <FormDescription>
-                Ví dụ: Nâng hài lòng người bệnh lên ≥ 90% – KPI: Điểm hài lòng
-                trung bình (%).
+                Các mục tiêu này tập trung vào việc tạo ra giá trị cho khách
+                hàng. Ví dụ: "Nâng cao mức độ hài lòng của người bệnh lên ≥
+                90%" với KPI là "Điểm hài lòng trung bình (thang điểm 100)",
+                hoặc "Giảm thời gian chờ đợi của khách hàng xuống 15 phút" với
+                KPI là "Thời gian chờ trung bình (phút)".
               </FormDescription>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
@@ -441,8 +448,12 @@ export function PlanForm() {
             <div className="space-y-4 rounded-md border p-4">
               <h3 className="font-semibold">Góc nhìn QUY TRÌNH NỘI BỘ</h3>
               <FormDescription>
-                Ví dụ: Tối ưu hóa quy trình khám bệnh - KPI: Thời gian chờ
-                khám trung bình (phút).
+                Các mục tiêu này liên quan đến việc cải thiện các quy trình
+                quan trọng để đáp ứng nhu cầu khách hàng và đạt mục tiêu tài
+                chính. Ví dụ: "Tối ưu hóa quy trình khám bệnh" với KPI là "Thời
+                gian trung bình từ lúc đăng ký đến lúc khám xong (phút)", hoặc
+                "Số hóa 100% hồ sơ bệnh án" với KPI là "Tỷ lệ hồ sơ được số hóa
+                (%)".
               </FormDescription>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
@@ -506,8 +517,12 @@ export function PlanForm() {
             <div className="space-y-4 rounded-md border p-4">
               <h3 className="font-semibold">Góc nhìn HỌC TẬP & PHÁT TRIỂN</h3>
               <FormDescription>
-                Ví dụ: Đào tạo 100% nhân viên về quy trình mới - KPI: Tỷ lệ
-                nhân viên hoàn thành đào tạo (%).
+                Mục tiêu ở đây tập trung vào năng lực của đội ngũ và hệ thống
+                để hỗ trợ các mục tiêu khác. Ví dụ: "Đào tạo và chứng nhận
+                chuyên môn cho 100% nhân viên" với KPI là "Tỷ lệ nhân viên
+                hoàn thành khóa đào tạo (%)", hoặc "Xây dựng văn hóa đổi mới
+                sáng tạo" với KPI là "Số lượng sáng kiến cải tiến được áp dụng
+                mỗi quý".
               </FormDescription>
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
