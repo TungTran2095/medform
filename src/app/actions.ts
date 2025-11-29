@@ -38,6 +38,33 @@ const planFormSchema = z.object({
   learningKpi1: z.string(),
   learningObjective2: z.string(),
   learningKpi2: z.string(),
+
+  // Action Plan Fields
+  actionPlan1: z.string(),
+  actionLead1: z.string(),
+  actionTime1: z.string(),
+  actionBudget1: z.string(),
+  actionKpi1: z.string(),
+  actionPlan2: z.string(),
+  actionLead2: z.string(),
+  actionTime2: z.string(),
+  actionBudget2: z.string(),
+  actionKpi2: z.string(),
+  actionPlan3: z.string(),
+  actionLead3: z.string(),
+  actionTime3: z.string(),
+  actionBudget3: z.string(),
+  actionKpi3: z.string(),
+  actionPlan4: z.string(),
+  actionLead4: z.string(),
+  actionTime4: z.string(),
+  actionBudget4: z.string(),
+  actionKpi4: z.string(),
+  actionPlan5: z.string(),
+  actionLead5: z.string(),
+  actionTime5: z.string(),
+  actionBudget5: z.string(),
+  actionKpi5: z.string(),
 });
 
 export async function submitPlanAction(data: z.infer<typeof planFormSchema>) {
