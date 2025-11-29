@@ -20,10 +20,24 @@ const planFormSchema = z.object({
   weaknesses: z.string().min(1, 'Weaknesses are required.'),
   opportunities: z.string().min(1, 'Opportunities are required.'),
   threats: z.string().min(1, 'Threats are required.'),
-  prioritizedInitiatives: z
-    .string()
-    .min(1, 'Prioritized initiatives are required.'),
-  objectives: z.string().min(1, 'Objectives are required.'),
+  
+  // BSC Fields
+  financialObjective1: z.string(),
+  financialKpi1: z.string(),
+  financialObjective2: z.string(),
+  financialKpi2: z.string(),
+  customerObjective1: z.string(),
+  customerKpi1: z.string(),
+  customerObjective2: z.string(),
+  customerKpi2: z.string(),
+  internalObjective1: z.string(),
+  internalKpi1: z.string(),
+  internalObjective2: z.string(),
+  internalKpi2: z.string(),
+  learningObjective1: z.string(),
+  learningKpi1: z.string(),
+  learningObjective2: z.string(),
+  learningKpi2: z.string(),
 });
 
 export async function submitPlanAction(data: z.infer<typeof planFormSchema>) {
