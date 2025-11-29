@@ -8,7 +8,6 @@ import { Wand2 } from 'lucide-react';
 
 import {
   generateInitiativesAction,
-  suggestKPIsAction,
   submitPlanAction,
 } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -50,14 +49,10 @@ const formSchema = z.object({
     .string()
     .min(1, { message: 'Vui lòng tạo và xem lại các sáng kiến ưu tiên.' }),
   objectives: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  suggestedKPIs: z
-    .string()
-    .min(1, { message: 'Vui lòng tạo và xem lại các KPI được đề xuất.' }),
 });
 
 export function PlanForm() {
   const [initiativesLoading, setInitiativesLoading] = React.useState(false);
-  const [kpisLoading, setKpisLoading] = React.useState(false);
   const [initiativeReasoning, setInitiativeReasoning] = React.useState('');
   const { toast } = useToast();
 
@@ -74,7 +69,6 @@ export function PlanForm() {
       threats: '',
       prioritizedInitiatives: '',
       objectives: '',
-      suggestedKPIs: '',
     },
   });
 
@@ -112,37 +106,6 @@ export function PlanForm() {
       toast({
         title: 'Thành công',
         description: 'Các sáng kiến ưu tiên đã được tạo.',
-      });
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Lỗi',
-        description: result.message,
-      });
-    }
-  };
-
-  const handleSuggestKPIs = async () => {
-    const isValid = await trigger('objectives');
-    if (!isValid) {
-      toast({
-        variant: 'destructive',
-        title: 'Thiếu thông tin',
-        description: 'Vui lòng nhập mục tiêu cho năm 2026.',
-      });
-      return;
-    }
-
-    setKpisLoading(true);
-    const { objectives } = getValues();
-    const result = await suggestKPIsAction({ objectives });
-    setKpisLoading(false);
-
-    if (result.success && result.data) {
-      setValue('suggestedKPIs', result.data.suggestedKPIs);
-      toast({
-        title: 'Thành công',
-        description: 'Các KPI đã được đề xuất.',
       });
     } else {
       toast({
@@ -303,35 +266,14 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              Công cụ hỗ trợ AI
+              Sáng kiến và Mục tiêu
             </CardTitle>
             <CardDescription>
-              Sử dụng AI để tạo đề xuất cho kế hoạch của bạn.
+              Xác định các sáng kiến và mục tiêu chính cho năm 2026.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-semibold">
-                  Xếp hạng ưu tiên cho năm 2026
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Dựa trên phân tích SWOT, AI sẽ đề xuất 5-7 sáng kiến chính.
-                </p>
-              </div>
-              <Button
-                type="button"
-                onClick={handleGenerateInitiatives}
-                disabled={initiativesLoading}
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                {initiativesLoading ? (
-                  <Icons.spinner className="animate-spin" />
-                ) : (
-                  <Wand2 />
-                )}
-                Tạo danh sách sáng kiến
-              </Button>
               <FormField
                 control={form.control}
                 name="prioritizedInitiatives"
@@ -341,7 +283,7 @@ export function PlanForm() {
                     <FormControl>
                       <Textarea
                         rows={7}
-                        placeholder="Kết quả từ AI sẽ xuất hiện ở đây..."
+                        placeholder="Liệt kê các sáng kiến chính..."
                         {...field}
                       />
                     </FormControl>
@@ -349,23 +291,11 @@ export function PlanForm() {
                   </FormItem>
                 )}
               />
-              {initiativeReasoning && (
-                <div className="space-y-2 rounded-lg border bg-secondary/50 p-4">
-                  <h4 className="font-semibold text-sm">Lý do đề xuất</h4>
-                  <p className="text-sm text-secondary-foreground">{initiativeReasoning}</p>
-                </div>
-              )}
             </div>
             
             <Separator />
             
             <div className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-semibold">Đề xuất KPI</h3>
-                <p className="text-sm text-muted-foreground">
-                  Nhập mục tiêu của bạn và AI sẽ đề xuất các Chỉ số Hiệu suất Chính (KPI) phù hợp.
-                </p>
-              </div>
                <FormField
                 control={form.control}
                 name="objectives"
@@ -376,36 +306,6 @@ export function PlanForm() {
                       <Textarea
                         rows={5}
                         placeholder="Ví dụ: Tăng trưởng doanh thu 20%, mở rộng thị phần..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button
-                type="button"
-                onClick={handleSuggestKPIs}
-                disabled={kpisLoading}
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                {kpisLoading ? (
-                  <Icons.spinner className="animate-spin" />
-                ) : (
-                  <Wand2 />
-                )}
-                Đề xuất KPIs
-              </Button>
-              <FormField
-                control={form.control}
-                name="suggestedKPIs"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Các KPI được đề xuất</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        rows={5}
-                        placeholder="Kết quả từ AI sẽ xuất hiện ở đây..."
                         {...field}
                       />
                     </FormControl>

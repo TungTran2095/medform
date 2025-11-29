@@ -24,7 +24,6 @@ const planFormSchema = z.object({
     .string()
     .min(1, 'Prioritized initiatives are required.'),
   objectives: z.string().min(1, 'Objectives are required.'),
-  suggestedKPIs: z.string().min(1, 'Suggested KPIs are required.'),
 });
 
 export async function submitPlanAction(data: z.infer<typeof planFormSchema>) {
