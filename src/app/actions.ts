@@ -65,6 +65,17 @@ const planFormSchema = z.object({
   actionTime5: z.string(),
   actionBudget5: z.string(),
   actionKpi5: z.string(),
+
+  // Financial Forecast
+  projectedRevenue: z.string(),
+  projectedCosts: z.string(),
+  projectedProfit: z.string(),
+  investmentPlan: z.string(),
+
+  // Commitment
+  commitment: z.boolean().refine((val) => val === true, {
+    message: 'Bạn phải cam kết để gửi kế hoạch.',
+  }),
 });
 
 export async function submitPlanAction(data: z.infer<typeof planFormSchema>) {

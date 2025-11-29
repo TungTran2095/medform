@@ -35,6 +35,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const formSchema = z.object({
   unitName: z.string().min(1, { message: 'Vui lòng nhập tên đơn vị.' }),
@@ -65,6 +66,8 @@ const formSchema = z.object({
   learningKpi1: z.string(),
   learningObjective2: z.string(),
   learningKpi2: z.string(),
+
+  // Action Plan Fields
   actionPlan1: z.string(),
   actionLead1: z.string(),
   actionTime1: z.string(),
@@ -90,6 +93,17 @@ const formSchema = z.object({
   actionTime5: z.string(),
   actionBudget5: z.string(),
   actionKpi5: z.string(),
+
+  // Financial Forecast
+  projectedRevenue: z.string(),
+  projectedCosts: z.string(),
+  projectedProfit: z.string(),
+  investmentPlan: z.string(),
+
+  // Commitment
+  commitment: z.boolean().refine((val) => val === true, {
+    message: 'Bạn phải cam kết để gửi kế hoạch.',
+  }),
 });
 
 export function PlanForm() {
@@ -147,6 +161,11 @@ export function PlanForm() {
       actionTime5: '',
       actionBudget5: '',
       actionKpi5: '',
+      projectedRevenue: '',
+      projectedCosts: '',
+      projectedProfit: '',
+      investmentPlan: '',
+      commitment: false,
     },
   });
 
@@ -580,6 +599,7 @@ export function PlanForm() {
             </div>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
@@ -588,7 +608,6 @@ export function PlanForm() {
             <CardDescription>
               Ghi các việc/dự án quan trọng nhất để đạt mục tiêu. Mỗi việc cần
               rõ: ai phụ trách, thời gian, ngân sách, KPI chính.
-              <br />
               Ví dụ: Triển khai hệ thống đặt lịch khám online – KPI: Tỷ lệ bệnh
               nhân đặt lịch online (%), số ca khám qua kênh online.
             </CardDescription>
@@ -668,6 +687,103 @@ export function PlanForm() {
                 />
               </div>
             ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              5. DỰ BÁO TÀI CHÍNH NĂM 2026 (ĐƠN VỊ: VND)
+            </CardTitle>
+            <CardDescription>
+              Ghi theo số liệu tốt nhất đơn vị ước tính, bám sát thực tế.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="projectedRevenue"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Doanh thu dự kiến</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="projectedCosts"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tổng chi phí dự kiến</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="projectedProfit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Lợi nhuận dự kiến</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="investmentPlan"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kế hoạch đầu tư (nếu có)</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              6. CAM KẾT CỦA TRƯỞNG ĐƠN VỊ
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FormField
+              control={form.control}
+              name="commitment"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Tôi cam kết chịu trách nhiệm tổ chức thực hiện kế hoạch
+                      kinh doanh năm 2026 của đơn vị, phối hợp với các phòng
+                      ban liên quan để đạt các mục tiêu đã đề ra.
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
           </CardContent>
         </Card>
 
