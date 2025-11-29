@@ -51,10 +51,7 @@ const planFormSchema = z.object({
   actionPlans: z.array(actionPlanSchema),
 
   // Financial Forecast
-  projectedRevenue: z.string(),
-  projectedCosts: z.string(),
-  projectedProfit: z.string(),
-  investmentPlan: z.string(),
+  financialForecastFile: z.any().optional(),
 
   // Commitment
   commitment: z.boolean().refine((val) => val === true, {

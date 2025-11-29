@@ -4,7 +4,7 @@ import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Info, PlusCircle, Trash2 } from 'lucide-react';
+import { Info, PlusCircle, Trash2, File as FileIcon, UploadCloud, X } from 'lucide-react';
 
 import { submitPlanAction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -79,10 +79,8 @@ const formSchema = z.object({
   actionPlans: z.array(actionPlanSchema),
 
   // Financial Forecast
-  projectedRevenue: z.string(),
-  projectedCosts: z.string(),
-  projectedProfit: z.string(),
-  investmentPlan: z.string(),
+  financialForecastFile: z.any().optional(),
+
 
   // Commitment
   commitment: z.boolean().refine((val) => val === true, {
@@ -125,15 +123,12 @@ export function PlanForm() {
         { plan: '', lead: '', time: '', budget: '', kpi: '' },
         { plan: '', lead: '', time: '', budget: '', kpi: '' },
       ],
-      projectedRevenue: '',
-      projectedCosts: '',
-      projectedProfit: '',
-      investmentPlan: '',
       commitment: false,
     },
   });
 
-  const { control, formState } = form;
+  const { control, formState, watch, setValue } = form;
+  const financialFile = watch('financialForecastFile');
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -703,58 +698,62 @@ export function PlanForm() {
               5. DỰ BÁO TÀI CHÍNH NĂM 2026 (ĐƠN VỊ: VND)
             </CardTitle>
             <CardDescription>
-              Ghi theo số liệu tốt nhất đơn vị ước tính, bám sát thực tế.
+              Tải lên tệp dự báo tài chính của bạn (PDF, Excel, Word).
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-6 sm:grid-cols-2">
+          <CardContent>
             <FormField
-              control={form.control}
-              name="projectedRevenue"
+              control={control}
+              name="financialForecastFile"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Doanh thu dự kiến</FormLabel>
+                  <FormLabel>Tệp dự báo tài chính</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <div className="relative">
+                      <Input
+                        type="file"
+                        className="hidden"
+                        id="file-upload"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            field.onChange(file);
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="file-upload"
+                        className="flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-input p-6 text-center"
+                      >
+                        <UploadCloud className="mb-2 h-8 w-8 text-muted-foreground" />
+                        <span className="font-medium text-primary">
+                          Nhấp để tải lên
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          hoặc kéo và thả
+                        </span>
+                      </label>
+                    </div>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="projectedCosts"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tổng chi phí dự kiến</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="projectedProfit"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Lợi nhuận dự kiến</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="investmentPlan"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kế hoạch đầu tư (nếu có)</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  {financialFile && (
+                    <div className="mt-4 flex items-center justify-between rounded-md border bg-muted/50 p-3">
+                      <div className="flex items-center gap-2">
+                        <FileIcon className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-sm font-medium">{financialFile.name}</span>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => setValue('financialForecastFile', null)}
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Xóa tệp</span>
+                      </Button>
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
