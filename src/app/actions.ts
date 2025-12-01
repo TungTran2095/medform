@@ -43,6 +43,15 @@ const bscItemSchema = z.object({
 });
 
 // This schema is used for the final submission validation on the server.
+const fileMetadataSchema = z
+  .object({
+    name: z.string(),
+    size: z.number(),
+    type: z.string().optional().nullable(),
+  })
+  .nullable()
+  .optional();
+
 const planFormSchema = z.object({
   unitName: z.string().min(1, 'Unit name is required.'),
   unitLeader: z.string().min(1, 'Unit leader is required.'),
@@ -84,7 +93,11 @@ const planFormSchema = z.object({
   actionPlans: z.array(actionPlanSchema),
 
   // Financial Forecast
-  financialForecastFile: z.any().optional(),
+  revenue: z.string().min(1, 'Revenue is required.'),
+  costs: z.string().min(1, 'Costs are required.'),
+  profit: z.string().min(1, 'Profit is required.'),
+  investment: z.string().optional(),
+  financialForecastFile: fileMetadataSchema,
 
   // Commitment
   commitment: z.boolean().refine((val) => val === true, {
@@ -95,8 +108,31 @@ const planFormSchema = z.object({
 export async function submitPlanAction(data: z.infer<typeof planFormSchema>) {
   try {
     const validatedData = planFormSchema.parse(data);
-    // Here you would typically save the data to a database like Firestore
-    console.log('Form data submitted:', validatedData);
+    const supabase = getSupabaseClient();
+
+    const financialForecast = {
+      revenue: validatedData.revenue,
+      costs: validatedData.costs,
+      profit: validatedData.profit,
+      investment: validatedData.investment || '',
+      attachment: validatedData.financialForecastFile ?? null,
+    };
+
+    const { error } = await supabase.from('plan_responses').insert({
+      unit_name: validatedData.unitName,
+      unit_leader: validatedData.unitLeader,
+      swot: validatedData.swotItems,
+      bsc: validatedData.bscItems,
+      action_plans: validatedData.actionPlans,
+      financial_forecast: financialForecast,
+      commitment: validatedData.commitment,
+    });
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      return { success: false, message: error.message };
+    }
+
     return { success: true, message: 'Kế hoạch đã được gửi thành công!' };
   } catch (error) {
     console.error('Error submitting form:', error);

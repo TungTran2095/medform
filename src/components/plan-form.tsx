@@ -122,7 +122,7 @@ const formSchema = z.object({
   costs: z.string().min(1, { message: 'Vui lòng nhập tổng chi phí dự kiến.' }),
   profit: z.string().min(1, { message: 'Vui lòng nhập lợi nhuận dự kiến.' }),
   investment: z.string().optional(),
-  financialForecastFile: z.any().optional(),
+  financialForecastFile: z.any().optional().nullable(),
 
   // Commitment
   commitment: z.boolean().refine((val) => val === true, {
@@ -164,6 +164,7 @@ export function PlanForm() {
       costs: '',
       profit: '',
       investment: '',
+      financialForecastFile: null,
       commitment: false,
     },
   });
@@ -230,11 +231,44 @@ export function PlanForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: 'Dữ liệu đã được ghi lại',
-      description: 'Dữ liệu biểu mẫu đã được ghi vào bảng điều khiển.',
-    });
+    try {
+      const fileMeta = values.financialForecastFile
+        ? {
+            name: values.financialForecastFile.name,
+            size: values.financialForecastFile.size,
+            type: values.financialForecastFile.type,
+          }
+        : null;
+
+      const payload = {
+        ...values,
+        investment: values.investment || '',
+        financialForecastFile: fileMeta,
+      };
+
+      const result = await submitPlanAction(payload as any);
+
+      if (result.success) {
+        toast({
+          title: 'Thành công',
+          description: 'Kế hoạch đã được gửi và lưu vào Supabase.',
+        });
+        form.reset();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Lỗi',
+          description: result.message || 'Không thể gửi kế hoạch.',
+        });
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Có lỗi xảy ra khi gửi kế hoạch. Vui lòng thử lại.',
+      });
+    }
   }
 
   const handlePreview = async () => {
