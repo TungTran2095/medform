@@ -62,31 +62,57 @@ const actionPlanSchema = z.object({
   kpi: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
 });
 
+const swotItemSchema = z.object({
+  type: z.enum(['strengths', 'weaknesses', 'opportunities', 'threats'], {
+    required_error: 'Vui lòng chọn loại SWOT.',
+  }),
+  description: z.string().min(1, { message: 'Vui lòng nhập mô tả.' }),
+});
+
+const bscItemSchema = z.object({
+  perspective: z.enum(['financial', 'customer', 'internal', 'learning'], {
+    required_error: 'Vui lòng chọn góc nhìn BSC.',
+  }),
+  objective: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
+  kpi: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+});
+
 const formSchema = z.object({
   unitName: z.string().min(1, { message: 'Vui lòng nhập tên đơn vị.' }),
   unitLeader: z.string().min(1, { message: 'Vui lòng nhập tên trưởng đơn vị.' }),
-  strengths: z.string().min(1, { message: 'Vui lòng mô tả điểm mạnh.' }),
-  weaknesses: z.string().min(1, { message: 'Vui lòng mô tả điểm yếu.' }),
-  opportunities: z.string().min(1, { message: 'Vui lòng mô tả cơ hội.' }),
-  threats: z.string().min(1, { message: 'Vui lòng mô tả thách thức.' }),
+  
+  // SWOT Fields - array - phải có đủ 4 yếu tố SWOT
+  swotItems: z
+    .array(swotItemSchema)
+    .min(4, { message: 'Vui lòng thêm đủ 4 yếu tố SWOT (Điểm mạnh, Điểm yếu, Cơ hội, Thách thức).' })
+    .refine(
+      (items) => {
+        const types = items.map((item) => item.type);
+        return (
+          types.includes('strengths') &&
+          types.includes('weaknesses') &&
+          types.includes('opportunities') &&
+          types.includes('threats')
+        );
+      },
+      {
+        message: 'Vui lòng thêm đủ 4 yếu tố SWOT: Điểm mạnh, Điểm yếu, Cơ hội, và Thách thức.',
+      }
+    ),
 
-  // BSC Fields
-  financialObjective1: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  financialKpi1: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
-  financialObjective2: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  financialKpi2: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
-  customerObjective1: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  customerKpi1: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
-  customerObjective2: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  customerKpi2: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
-  internalObjective1: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  internalKpi1: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
-  internalObjective2: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  internalKpi2: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
-  learningObjective1: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  learningKpi1: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
-  learningObjective2: z.string().min(1, { message: 'Vui lòng nhập mục tiêu.' }),
-  learningKpi2: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
+  // BSC Fields - array - phải có ít nhất 4 góc nhìn BSC
+  bscItems: z
+    .array(bscItemSchema)
+    .min(4, { message: 'Vui lòng thêm ít nhất 4 góc nhìn BSC.' })
+    .refine(
+      (items) => {
+        const perspectives = new Set(items.map((item) => item.perspective));
+        return perspectives.size >= 4;
+      },
+      {
+        message: 'Vui lòng thêm ít nhất 1 mục tiêu cho mỗi góc nhìn BSC (Tài chính, Khách hàng, Quy trình nội bộ, Học tập & Phát triển).',
+      }
+    ),
 
   // Action Plan Fields
   actionPlans: z.array(actionPlanSchema),
@@ -117,26 +143,18 @@ export function PlanForm() {
     defaultValues: {
       unitName: '',
       unitLeader: '',
-      strengths: '',
-      weaknesses: '',
-      opportunities: '',
-      threats: '',
-      financialObjective1: '',
-      financialKpi1: '',
-      financialObjective2: '',
-      financialKpi2: '',
-      customerObjective1: '',
-      customerKpi1: '',
-      customerObjective2: '',
-      customerKpi2: '',
-      internalObjective1: '',
-      internalKpi1: '',
-      internalObjective2: '',
-      internalKpi2: '',
-      learningObjective1: '',
-      learningKpi1: '',
-      learningObjective2: '',
-      learningKpi2: '',
+      swotItems: [
+        { type: 'strengths', description: '' },
+        { type: 'weaknesses', description: '' },
+        { type: 'opportunities', description: '' },
+        { type: 'threats', description: '' },
+      ],
+      bscItems: [
+        { perspective: 'financial', objective: '', kpi: '' },
+        { perspective: 'customer', objective: '', kpi: '' },
+        { perspective: 'internal', objective: '', kpi: '' },
+        { perspective: 'learning', objective: '', kpi: '' },
+      ],
       actionPlans: [
         { plan: '', lead: '', time: '', budget: '', kpi: '' },
         { plan: '', lead: '', time: '', budget: '', kpi: '' },
@@ -196,7 +214,17 @@ export function PlanForm() {
     }
   }, [unitName, donViList, setValue]);
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields: swotFields, append: appendSwot, remove: removeSwot } = useFieldArray({
+    control,
+    name: 'swotItems',
+  });
+
+  const { fields: bscFields, append: appendBsc, remove: removeBsc } = useFieldArray({
+    control,
+    name: 'bscItems',
+  });
+
+  const { fields: actionPlanFields, append: appendActionPlan, remove: removeActionPlan } = useFieldArray({
     control,
     name: 'actionPlans',
   });
@@ -360,59 +388,85 @@ export function PlanForm() {
               Điền vào các điểm mạnh, điểm yếu, cơ hội và thách thức của đơn vị.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="strengths"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Điểm mạnh (Strengths)</FormLabel>
-                  <FormControl>
-                    <Textarea rows={5} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="weaknesses"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Điểm yếu (Weaknesses)</FormLabel>
-                  <FormControl>
-                    <Textarea rows={5} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="opportunities"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cơ hội (Opportunities)</FormLabel>
-                  <FormControl>
-                    <Textarea rows={5} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="threats"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Thách thức (Threats)</FormLabel>
-                  <FormControl>
-                    <Textarea rows={5} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <CardContent className="space-y-6">
+            {swotFields.map((field, index) => {
+              const swotTypeLabels: Record<string, string> = {
+                strengths: 'Điểm mạnh (Strengths)',
+                weaknesses: 'Điểm yếu (Weaknesses)',
+                opportunities: 'Cơ hội (Opportunities)',
+                threats: 'Thách thức (Threats)',
+              };
+              return (
+                <div
+                  key={field.id}
+                  className="relative space-y-4 rounded-md border p-4"
+                >
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={control}
+                      name={`swotItems.${index}.type`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Loại SWOT</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Chọn loại SWOT" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="strengths">Điểm mạnh (Strengths)</SelectItem>
+                              <SelectItem value="weaknesses">Điểm yếu (Weaknesses)</SelectItem>
+                              <SelectItem value="opportunities">Cơ hội (Opportunities)</SelectItem>
+                              <SelectItem value="threats">Thách thức (Threats)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={control}
+                      name={`swotItems.${index}.description`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mô tả</FormLabel>
+                          <FormControl>
+                            <Textarea rows={5} placeholder="Nhập mô tả..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  {swotFields.length > 4 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => removeSwot(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Xóa mục SWOT</span>
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendSwot({ type: 'strengths', description: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm mục SWOT
+            </Button>
           </CardContent>
         </Card>
 
@@ -445,281 +499,119 @@ export function PlanForm() {
               thể, có thể định lượng và bám sát với mục tiêu đó.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
-            {/* Financial Perspective */}
-            <div className="space-y-4 rounded-md border p-4">
-              <h3 className="font-semibold">Góc nhìn TÀI CHÍNH</h3>
-              <FormDescription>
-                Các mục tiêu tài chính nhằm đảm bảo sự bền vững và tăng trưởng
-                về mặt kinh tế. Ví dụ: "Tăng doanh thu 10% so với năm 2025" với
-                KPI là "Tỷ lệ tăng trưởng doanh thu (%)", hoặc "Tối ưu hóa chi
-                phí hoạt động 5%" với KPI là "Tỷ lệ chi phí/doanh thu (%)".
-              </FormDescription>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="financialObjective1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>1) Mục tiêu:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+          <CardContent className="space-y-6">
+            {bscFields.map((field, index) => {
+              const perspectiveLabels: Record<string, { title: string; description: string }> = {
+                financial: {
+                  title: 'Góc nhìn TÀI CHÍNH',
+                  description: 'Các mục tiêu tài chính nhằm đảm bảo sự bền vững và tăng trưởng về mặt kinh tế. Ví dụ: "Tăng doanh thu 10% so với năm 2025" với KPI là "Tỷ lệ tăng trưởng doanh thu (%)".',
+                },
+                customer: {
+                  title: 'Góc nhìn BỆNH NHÂN (KHÁCH HÀNG)',
+                  description: 'Các mục tiêu này tập trung vào việc tạo ra giá trị cho khách hàng. Ví dụ: "Nâng cao mức độ hài lòng của người bệnh lên ≥ 90%" với KPI là "Điểm hài lòng trung bình (thang điểm 100)".',
+                },
+                internal: {
+                  title: 'Góc nhìn QUY TRÌNH NỘI BỘ',
+                  description: 'Các mục tiêu này liên quan đến việc cải thiện các quy trình quan trọng để đáp ứng nhu cầu khách hàng và đạt mục tiêu tài chính. Ví dụ: "Tối ưu hóa quy trình khám bệnh" với KPI là "Thời gian trung bình từ lúc đăng ký đến lúc khám xong (phút)".',
+                },
+                learning: {
+                  title: 'Góc nhìn HỌC TẬP & PHÁT TRIỂN',
+                  description: 'Mục tiêu ở đây tập trung vào năng lực của đội ngũ và hệ thống để hỗ trợ các mục tiêu khác. Ví dụ: "Đào tạo và chứng nhận chuyên môn cho 100% nhân viên" với KPI là "Tỷ lệ nhân viên hoàn thành khóa đào tạo (%)".',
+                },
+              };
+              const currentPerspective = watch(`bscItems.${index}.perspective`) as keyof typeof perspectiveLabels;
+              const perspectiveInfo = currentPerspective ? perspectiveLabels[currentPerspective] : null;
+              
+              return (
+                <div
+                  key={field.id}
+                  className="relative space-y-4 rounded-md border p-4"
+                >
+                  <FormField
+                    control={control}
+                    name={`bscItems.${index}.perspective`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Góc nhìn BSC</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn góc nhìn BSC" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="financial">Góc nhìn TÀI CHÍNH</SelectItem>
+                            <SelectItem value="customer">Góc nhìn BỆNH NHÂN (KHÁCH HÀNG)</SelectItem>
+                            <SelectItem value="internal">Góc nhìn QUY TRÌNH NỘI BỘ</SelectItem>
+                            <SelectItem value="learning">Góc nhìn HỌC TẬP & PHÁT TRIỂN</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {perspectiveInfo && (
+                    <div className="space-y-2">
+                      <h3 className="font-semibold">{perspectiveInfo.title}</h3>
+                      <FormDescription>{perspectiveInfo.description}</FormDescription>
+                    </div>
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="financialKpi1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>KPI:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={control}
+                      name={`bscItems.${index}.objective`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mục tiêu:</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nhập mục tiêu..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={control}
+                      name={`bscItems.${index}.kpi`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>KPI:</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nhập KPI..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  {bscFields.length > 4 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => removeBsc(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Xóa mục tiêu BSC</span>
+                    </Button>
                   )}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="financialObjective2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>2) Mục tiêu:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="financialKpi2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>KPI:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Customer Perspective */}
-            <div className="space-y-4 rounded-md border p-4">
-              <h3 className="font-semibold">
-                Góc nhìn BỆNH NHÂN (KHÁCH HÀNG)
-              </h3>
-              <FormDescription>
-                Các mục tiêu này tập trung vào việc tạo ra giá trị cho khách
-                hàng. Ví dụ: "Nâng cao mức độ hài lòng của người bệnh lên ≥
-                90%" với KPI là "Điểm hài lòng trung bình (thang điểm 100)",
-                hoặc "Giảm thời gian chờ đợi của khách hàng xuống 15 phút" với
-                KPI là "Thời gian chờ trung bình (phút)".
-              </FormDescription>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="customerObjective1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>1) Mục tiêu:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerKpi1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>KPI:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="customerObjective2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>2) Mục tiêu:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerKpi2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>KPI:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Internal Process Perspective */}
-            <div className="space-y-4 rounded-md border p-4">
-              <h3 className="font-semibold">Góc nhìn QUY TRÌNH NỘI BỘ</h3>
-              <FormDescription>
-                Các mục tiêu này liên quan đến việc cải thiện các quy trình
-                quan trọng để đáp ứng nhu cầu khách hàng và đạt mục tiêu tài
-                chính. Ví dụ: "Tối ưu hóa quy trình khám bệnh" với KPI là "Thời
-                gian trung bình từ lúc đăng ký đến lúc khám xong (phút)", hoặc
-                "Số hóa 100% hồ sơ bệnh án" với KPI là "Tỷ lệ hồ sơ được số hóa
-                (%)".
-              </FormDescription>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="internalObjective1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>1) Mục tiêu:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="internalKpi1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>KPI:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="internalObjective2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>2) Mục tiêu:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="internalKpi2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>KPI:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Learning & Growth Perspective */}
-            <div className="space-y-4 rounded-md border p-4">
-              <h3 className="font-semibold">Góc nhìn HỌC TẬP & PHÁT TRIỂN</h3>
-              <FormDescription>
-                Mục tiêu ở đây tập trung vào năng lực của đội ngũ và hệ thống
-                để hỗ trợ các mục tiêu khác. Ví dụ: "Đào tạo và chứng nhận
-                chuyên môn cho 100% nhân viên" với KPI là "Tỷ lệ nhân viên
-                hoàn thành khóa đào tạo (%)", hoặc "Xây dựng văn hóa đổi mới
-                sáng tạo" với KPI là "Số lượng sáng kiến cải tiến được áp dụng
-                mỗi quý".
-              </FormDescription>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="learningObjective1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>1) Mục tiêu:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="learningKpi1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>KPI:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="learningObjective2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>2) Mục tiêu:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="learningKpi2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>KPI:</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
+                </div>
+              );
+            })}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendBsc({ perspective: 'financial', objective: '', kpi: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm mục tiêu BSC
+            </Button>
           </CardContent>
         </Card>
 
@@ -736,7 +628,7 @@ export function PlanForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {fields.map((field, index) => (
+            {actionPlanFields.map((field, index) => (
               <div
                 key={field.id}
                 className="relative space-y-4 rounded-md border p-4"
@@ -808,13 +700,13 @@ export function PlanForm() {
                     </FormItem>
                   )}
                 />
-                {fields.length > 1 && (
+                {actionPlanFields.length > 1 && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    onClick={() => remove(index)}
+                    onClick={() => removeActionPlan(index)}
                   >
                     <Trash2 className="h-4 w-4" />
                     <span className="sr-only">Xóa hành động</span>
@@ -828,7 +720,7 @@ export function PlanForm() {
               size="sm"
               className="no-print"
               onClick={() =>
-                append({ plan: '', lead: '', time: '', budget: '', kpi: '' })
+                appendActionPlan({ plan: '', lead: '', time: '', budget: '', kpi: '' })
               }
             >
               <PlusCircle className="mr-2 h-4 w-4" />

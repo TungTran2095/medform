@@ -31,32 +31,54 @@ const actionPlanSchema = z.object({
   kpi: z.string(),
 });
 
+const swotItemSchema = z.object({
+  type: z.enum(['strengths', 'weaknesses', 'opportunities', 'threats']),
+  description: z.string(),
+});
+
+const bscItemSchema = z.object({
+  perspective: z.enum(['financial', 'customer', 'internal', 'learning']),
+  objective: z.string(),
+  kpi: z.string(),
+});
+
 // This schema is used for the final submission validation on the server.
 const planFormSchema = z.object({
   unitName: z.string().min(1, 'Unit name is required.'),
   unitLeader: z.string().min(1, 'Unit leader is required.'),
-  strengths: z.string().min(1, 'Strengths are required.'),
-  weaknesses: z.string().min(1, 'Weaknesses are required.'),
-  opportunities: z.string().min(1, 'Opportunities are required.'),
-  threats: z.string().min(1, 'Threats are required.'),
   
-  // BSC Fields
-  financialObjective1: z.string(),
-  financialKpi1: z.string(),
-  financialObjective2: z.string(),
-  financialKpi2: z.string(),
-  customerObjective1: z.string(),
-  customerKpi1: z.string(),
-  customerObjective2: z.string(),
-  customerKpi2: z.string(),
-  internalObjective1: z.string(),
-  internalKpi1: z.string(),
-  internalObjective2: z.string(),
-  internalKpi2: z.string(),
-  learningObjective1: z.string(),
-  learningKpi1: z.string(),
-  learningObjective2: z.string(),
-  learningKpi2: z.string(),
+  // SWOT Fields - array - phải có đủ 4 yếu tố SWOT
+  swotItems: z
+    .array(swotItemSchema)
+    .min(4, 'At least 4 SWOT items are required.')
+    .refine(
+      (items) => {
+        const types = items.map((item) => item.type);
+        return (
+          types.includes('strengths') &&
+          types.includes('weaknesses') &&
+          types.includes('opportunities') &&
+          types.includes('threats')
+        );
+      },
+      {
+        message: 'All 4 SWOT types are required: strengths, weaknesses, opportunities, and threats.',
+      }
+    ),
+  
+  // BSC Fields - array - phải có ít nhất 4 góc nhìn BSC
+  bscItems: z
+    .array(bscItemSchema)
+    .min(4, 'At least 4 BSC items are required.')
+    .refine(
+      (items) => {
+        const perspectives = new Set(items.map((item) => item.perspective));
+        return perspectives.size >= 4;
+      },
+      {
+        message: 'At least one objective for each BSC perspective is required (financial, customer, internal, learning).',
+      }
+    ),
 
   // Action Plan Fields
   actionPlans: z.array(actionPlanSchema),
