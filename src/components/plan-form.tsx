@@ -16,7 +16,7 @@ import {
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-import { submitPlanAction } from '@/app/actions';
+import { submitPlanAction, getDonViList, type DonViItem } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -37,6 +37,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from './icons';
 import {
@@ -57,11 +64,7 @@ const actionPlanSchema = z.object({
 
 const formSchema = z.object({
   unitName: z.string().min(1, { message: 'Vui lòng nhập tên đơn vị.' }),
-  unitType: z.string().min(1, { message: 'Vui lòng nhập loại đơn vị.' }),
-  unitLeader: z.string().min(1, { message: 'Vui lòng nhập tên lãnh đạo.' }),
-  planner: z
-    .string()
-    .min(1, { message: 'Vui lòng nhập tên người lập kế hoạch.' }),
+  unitLeader: z.string().min(1, { message: 'Vui lòng nhập tên trưởng đơn vị.' }),
   strengths: z.string().min(1, { message: 'Vui lòng mô tả điểm mạnh.' }),
   weaknesses: z.string().min(1, { message: 'Vui lòng mô tả điểm yếu.' }),
   opportunities: z.string().min(1, { message: 'Vui lòng mô tả cơ hội.' }),
@@ -105,15 +108,15 @@ export function PlanForm() {
   const { toast } = useToast();
   const formRef = React.useRef<HTMLFormElement>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = React.useState(false);
+  const [donViList, setDonViList] = React.useState<DonViItem[]>([]);
+  const [isLoadingDonVi, setIsLoadingDonVi] = React.useState(true);
 
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       unitName: '',
-      unitType: '',
       unitLeader: '',
-      planner: '',
       strengths: '',
       weaknesses: '',
       opportunities: '',
@@ -149,6 +152,49 @@ export function PlanForm() {
 
   const { control, formState, watch, setValue, trigger } = form;
   const financialFile = watch('financialForecastFile');
+  const unitName = watch('unitName');
+
+  // Load danh sách đơn vị khi component mount
+  React.useEffect(() => {
+    async function loadDonVi() {
+      setIsLoadingDonVi(true);
+      try {
+        const result = await getDonViList();
+        console.log('getDonViList result:', result);
+        if (result.success) {
+          setDonViList(result.data);
+          console.log('Don vi list loaded:', result.data.length, 'items');
+        } else {
+          console.error('Failed to load don_vi:', result.error);
+          toast({
+            variant: 'destructive',
+            title: 'Lỗi',
+            description: result.error || 'Không thể tải danh sách đơn vị.',
+          });
+        }
+      } catch (error) {
+        console.error('Error in loadDonVi:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Lỗi',
+          description: 'Có lỗi xảy ra khi tải danh sách đơn vị.',
+        });
+      } finally {
+        setIsLoadingDonVi(false);
+      }
+    }
+    loadDonVi();
+  }, [toast]);
+
+  // Tự động điền trưởng đơn vị khi chọn đơn vị
+  React.useEffect(() => {
+    if (unitName) {
+      const selectedDonVi = donViList.find((item) => item.Don_vi === unitName);
+      if (selectedDonVi) {
+        setValue('unitLeader', selectedDonVi.Ho_va_ten);
+      }
+    }
+  }, [unitName, donViList, setValue]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -246,22 +292,42 @@ export function PlanForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tên đơn vị</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ví dụ: Phòng Marketing" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="unitType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Loại đơn vị</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ví dụ: Phòng ban" {...field} />
-                  </FormControl>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                    }}
+                    value={field.value || undefined}
+                    disabled={isLoadingDonVi || donViList.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={isLoadingDonVi ? "Đang tải..." : donViList.length === 0 ? "Không có dữ liệu" : "Chọn đơn vị"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {donViList.length === 0 ? (
+                        <SelectItem value="no-data" disabled>
+                          {isLoadingDonVi ? "Đang tải..." : "Không có dữ liệu"}
+                        </SelectItem>
+                      ) : (
+                        // Loại bỏ duplicate và dùng index làm key để tránh trùng key
+                        donViList
+                          .filter((item, index, self) => 
+                            index === self.findIndex((t) => t.Don_vi === item.Don_vi)
+                          )
+                          .map((item, index) => (
+                            <SelectItem key={`${item.Don_vi}-${index}`} value={item.Don_vi}>
+                              {item.Don_vi}
+                            </SelectItem>
+                          ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {donViList.length === 0 && !isLoadingDonVi && (
+                    <p className="text-sm text-muted-foreground">
+                      Vui lòng kiểm tra kết nối database hoặc biến môi trường Supabase.
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -271,22 +337,14 @@ export function PlanForm() {
               name="unitLeader"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Lãnh đạo đơn vị</FormLabel>
+                  <FormLabel>Trưởng đơn vị</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nguyễn Văn A" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="planner"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Người lập kế hoạch</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Trần Thị B" {...field} />
+                    <Input 
+                      placeholder="Sẽ tự động điền khi chọn đơn vị" 
+                      {...field} 
+                      readOnly
+                      className="bg-muted"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
