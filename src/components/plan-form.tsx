@@ -1083,7 +1083,7 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              TRIỂN KHAI CÁC DỊCH VỤ MỚI CỦA 2026
+              8. TRIỂN KHAI CÁC DỊCH VỤ MỚI CỦA 2026
             </CardTitle>
             <CardDescription>
               Mô tả các dịch vụ mới sẽ được triển khai trong năm 2026.
@@ -1151,7 +1151,7 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              TUYỂN DỤNG
+              9. TUYỂN DỤNG
             </CardTitle>
             <CardDescription>
               Kế hoạch tuyển dụng của đơn vị.
@@ -1219,7 +1219,7 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              8. HỘI NGHỊ HỘI THẢO
+              10. HỘI NGHỊ HỘI THẢO
             </CardTitle>
             <CardDescription>
               Kế hoạch tổ chức các hội nghị, hội thảo.
@@ -1287,7 +1287,7 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              9. CÁC SẢN PHẨM CỦA CHƯƠNG TRÌNH CỘNG ĐỒNG
+              11. CÁC SẢN PHẨM CỦA CHƯƠNG TRÌNH CỘNG ĐỒNG
             </CardTitle>
             <CardDescription>
               Mô tả các sản phẩm thuộc chương trình cộng đồng.
@@ -1355,7 +1355,7 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              10. ĐỂ ĐẠT ĐƯỢC DOANH THU THÌ CÓ KIẾN NGHỊ VÀ ĐỀ XUẤT GÌ KHÔNG
+              12. ĐỂ ĐẠT ĐƯỢC DOANH THU THÌ CÓ KIẾN NGHỊ VÀ ĐỀ XUẤT GÌ KHÔNG
             </CardTitle>
             <CardDescription>
               Đưa ra các kiến nghị và đề xuất để đạt được doanh thu mục tiêu.
@@ -1423,7 +1423,7 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              11. CAM KẾT CỦA TRƯỞNG ĐƠN VỊ
+              13. CAM KẾT CỦA TRƯỞNG ĐƠN VỊ
             </CardTitle>
           </CardHeader>
           <CardContent>

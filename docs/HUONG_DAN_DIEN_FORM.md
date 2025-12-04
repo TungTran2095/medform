@@ -13,12 +13,12 @@ Tài liệu này hướng dẫn chi tiết cách điền từng phần trong for
 5. [Dự báo tài chính năm 2026](#5-dự-báo-tài-chính-năm-2026)
 6. [Định hướng chuyên môn và mũi nhọn chuyên môn](#6-định-hướng-chuyên-môn-và-mũi-nhọn-chuyên-môn)
 7. [Sản phẩm chiến lược của các đơn vị](#7-sản-phẩm-chiến-lược-của-các-đơn-vị)
-8. [Triển khai các dịch vụ mới của 2026](#triển-khai-các-dịch-vụ-mới-của-2026)
-9. [Tuyển dụng](#tuyển-dụng)
-10. [Hội nghị hội thảo](#8-hội-nghị-hội-thảo)
-11. [Các sản phẩm của chương trình cộng đồng](#9-các-sản-phẩm-của-chương-trình-cộng-đồng)
-12. [Để đạt được doanh thu thì có kiến nghị và đề xuất gì không](#10-để-đạt-được-doanh-thu-thì-có-kiến-nghị-và-đề-xuất-gì-không)
-13. [Cam kết của trưởng đơn vị](#11-cam-kết-của-trưởng-đơn-vị)
+8. [Triển khai các dịch vụ mới của 2026](#8-triển-khai-các-dịch-vụ-mới-của-2026)
+9. [Tuyển dụng](#9-tuyển-dụng)
+10. [Hội nghị hội thảo](#10-hội-nghị-hội-thảo)
+11. [Các sản phẩm của chương trình cộng đồng](#11-các-sản-phẩm-của-chương-trình-cộng-đồng)
+12. [Để đạt được doanh thu thì có kiến nghị và đề xuất gì không](#12-để-đạt-được-doanh-thu-thì-có-kiến-nghị-và-đề-xuất-gì-không)
+13. [Cam kết của trưởng đơn vị](#13-cam-kết-của-trưởng-đơn-vị)
 
 ---
 
@@ -394,7 +394,7 @@ Mô tả chi tiết về sản phẩm:
 
 ---
 
-## TRIỂN KHAI CÁC DỊCH VỤ MỚI CỦA 2026
+## 8. TRIỂN KHAI CÁC DỊCH VỤ MỚI CỦA 2026
 
 ### Mục đích
 Mô tả các dịch vụ mới sẽ được triển khai trong năm 2026.
@@ -437,7 +437,7 @@ Mô tả chi tiết về dịch vụ:
 
 ---
 
-## TUYỂN DỤNG
+## 9. TUYỂN DỤNG
 
 ### Mục đích
 Kế hoạch tuyển dụng nhân sự của đơn vị trong năm 2026.
@@ -480,7 +480,7 @@ Mô tả chi tiết về vị trí tuyển dụng:
 
 ---
 
-## 8. HỘI NGHỊ HỘI THẢO
+## 10. HỘI NGHỊ HỘI THẢO
 
 ### Mục đích
 Kế hoạch tổ chức các hội nghị, hội thảo chuyên môn trong năm 2026.
@@ -524,7 +524,7 @@ Mô tả chi tiết về hội nghị/hội thảo:
 
 ---
 
-## 9. CÁC SẢN PHẨM CỦA CHƯƠNG TRÌNH CỘNG ĐỒNG
+## 11. CÁC SẢN PHẨM CỦA CHƯƠNG TRÌNH CỘNG ĐỒNG
 
 ### Mục đích
 Mô tả các sản phẩm/dịch vụ thuộc chương trình cộng đồng mà đơn vị sẽ thực hiện trong năm 2026.
@@ -568,7 +568,7 @@ Mô tả chi tiết về sản phẩm cộng đồng:
 
 ---
 
-## 10. ĐỂ ĐẠT ĐƯỢC DOANH THU THÌ CÓ KIẾN NGHỊ VÀ ĐỀ XUẤT GÌ KHÔNG
+## 12. ĐỂ ĐẠT ĐƯỢC DOANH THU THÌ CÓ KIẾN NGHỊ VÀ ĐỀ XUẤT GÌ KHÔNG
 
 ### Mục đích
 Đưa ra các kiến nghị và đề xuất cụ thể để đạt được mục tiêu doanh thu đã đề ra.
@@ -611,7 +611,7 @@ Mô tả chi tiết về kiến nghị/đề xuất:
 
 ---
 
-## 11. CAM KẾT CỦA TRƯỞNG ĐƠN VỊ
+## 13. CAM KẾT CỦA TRƯỞNG ĐƠN VỊ
 
 ### Mục đích
 Cam kết của trưởng đơn vị về việc thực hiện kế hoạch đã đề ra.
@@ -659,4 +659,5 @@ Nếu có thắc mắc hoặc cần hỗ trợ, vui lòng liên hệ:
 ---
 
 **Chúc bạn hoàn thành kế hoạch thành công!**
+
 
