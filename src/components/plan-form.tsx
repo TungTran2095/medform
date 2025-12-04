@@ -77,6 +77,12 @@ const bscItemSchema = z.object({
   kpi: z.string().min(1, { message: 'Vui lòng nhập KPI.' }),
 });
 
+// Schema cho các nội dung mới (mỗi item có name và detail)
+const contentItemSchema = z.object({
+  name: z.string().min(1, { message: 'Vui lòng nhập tên nội dung.' }),
+  detail: z.string().min(1, { message: 'Vui lòng nhập chi tiết.' }),
+});
+
 const formSchema = z.object({
   unitName: z.string().min(1, { message: 'Vui lòng nhập tên đơn vị.' }),
   unitLeader: z.string().min(1, { message: 'Vui lòng nhập tên trưởng đơn vị.' }),
@@ -124,6 +130,15 @@ const formSchema = z.object({
   investment: z.string().optional(),
   financialForecastFile: z.any().optional().nullable(),
 
+  // Nội dung mới 6-10
+  professionalOrientation: z.array(contentItemSchema), // 6. Định hướng chuyên môn và mũi nhọn chuyên môn
+  strategicProducts: z.array(contentItemSchema), // 7. Sản phẩm chiến lược của các đơn vị
+  newServices2026: z.array(contentItemSchema), // Triển khai các dịch vụ mới của 2026
+  recruitment: z.array(contentItemSchema), // Tuyển dụng
+  conferences: z.array(contentItemSchema), // 8. Hội nghị hội thảo
+  communityPrograms: z.array(contentItemSchema), // 9. Các sản phẩm của chương trình công đồng
+  revenueRecommendations: z.array(contentItemSchema), // 10. Để đạt được doanh thu thì có kiến nghị và đề xuất gì không
+
   // Commitment
   commitment: z.boolean().refine((val) => val === true, {
     message: 'Bạn phải cam kết để gửi kế hoạch.',
@@ -165,6 +180,13 @@ export function PlanForm() {
       profit: '',
       investment: '',
       financialForecastFile: null,
+      professionalOrientation: [],
+      strategicProducts: [],
+      newServices2026: [],
+      recruitment: [],
+      conferences: [],
+      communityPrograms: [],
+      revenueRecommendations: [],
       commitment: false,
     },
   });
@@ -228,6 +250,42 @@ export function PlanForm() {
   const { fields: actionPlanFields, append: appendActionPlan, remove: removeActionPlan } = useFieldArray({
     control,
     name: 'actionPlans',
+  });
+
+  // Field arrays cho các nội dung mới
+  const { fields: professionalOrientationFields, append: appendProfessionalOrientation, remove: removeProfessionalOrientation } = useFieldArray({
+    control,
+    name: 'professionalOrientation',
+  });
+
+  const { fields: strategicProductsFields, append: appendStrategicProducts, remove: removeStrategicProducts } = useFieldArray({
+    control,
+    name: 'strategicProducts',
+  });
+
+  const { fields: newServices2026Fields, append: appendNewServices2026, remove: removeNewServices2026 } = useFieldArray({
+    control,
+    name: 'newServices2026',
+  });
+
+  const { fields: recruitmentFields, append: appendRecruitment, remove: removeRecruitment } = useFieldArray({
+    control,
+    name: 'recruitment',
+  });
+
+  const { fields: conferencesFields, append: appendConferences, remove: removeConferences } = useFieldArray({
+    control,
+    name: 'conferences',
+  });
+
+  const { fields: communityProgramsFields, append: appendCommunityPrograms, remove: removeCommunityPrograms } = useFieldArray({
+    control,
+    name: 'communityPrograms',
+  });
+
+  const { fields: revenueRecommendationsFields, append: appendRevenueRecommendations, remove: removeRevenueRecommendations } = useFieldArray({
+    control,
+    name: 'revenueRecommendations',
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -889,7 +947,483 @@ export function PlanForm() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">
-              6. CAM KẾT CỦA TRƯỞNG ĐƠN VỊ
+              6. ĐỊNH HƯỚNG CHUYÊN MÔN VÀ MŨI NHỌN CHUYÊN MÔN
+            </CardTitle>
+            <CardDescription>
+              Xác định các định hướng chuyên môn và mũi nhọn chuyên môn của đơn vị.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {professionalOrientationFields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative space-y-4 rounded-md border p-4"
+              >
+                <FormField
+                  control={control}
+                  name={`professionalOrientation.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên định hướng chuyên môn:</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên định hướng chuyên môn..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`professionalOrientation.${index}.detail`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi tiết:</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} placeholder="Nhập chi tiết..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {professionalOrientationFields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => removeProfessionalOrientation(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Xóa mục</span>
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendProfessionalOrientation({ name: '', detail: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm định hướng chuyên môn
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              7. SẢN PHẨM CHIẾN LƯỢC CỦA CÁC ĐƠN VỊ
+            </CardTitle>
+            <CardDescription>
+              Liệt kê các sản phẩm chiến lược của đơn vị.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {strategicProductsFields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative space-y-4 rounded-md border p-4"
+              >
+                <FormField
+                  control={control}
+                  name={`strategicProducts.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên sản phẩm chiến lược:</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên sản phẩm chiến lược..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`strategicProducts.${index}.detail`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi tiết:</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} placeholder="Nhập chi tiết..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {strategicProductsFields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => removeStrategicProducts(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Xóa mục</span>
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendStrategicProducts({ name: '', detail: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm sản phẩm chiến lược
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              TRIỂN KHAI CÁC DỊCH VỤ MỚI CỦA 2026
+            </CardTitle>
+            <CardDescription>
+              Mô tả các dịch vụ mới sẽ được triển khai trong năm 2026.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {newServices2026Fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative space-y-4 rounded-md border p-4"
+              >
+                <FormField
+                  control={control}
+                  name={`newServices2026.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên dịch vụ mới:</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên dịch vụ mới..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`newServices2026.${index}.detail`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi tiết:</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} placeholder="Nhập chi tiết..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {newServices2026Fields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => removeNewServices2026(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Xóa mục</span>
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendNewServices2026({ name: '', detail: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm dịch vụ mới
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              TUYỂN DỤNG
+            </CardTitle>
+            <CardDescription>
+              Kế hoạch tuyển dụng của đơn vị.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {recruitmentFields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative space-y-4 rounded-md border p-4"
+              >
+                <FormField
+                  control={control}
+                  name={`recruitment.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên vị trí tuyển dụng:</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên vị trí tuyển dụng..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`recruitment.${index}.detail`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi tiết:</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} placeholder="Nhập chi tiết..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {recruitmentFields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => removeRecruitment(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Xóa mục</span>
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendRecruitment({ name: '', detail: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm vị trí tuyển dụng
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              8. HỘI NGHỊ HỘI THẢO
+            </CardTitle>
+            <CardDescription>
+              Kế hoạch tổ chức các hội nghị, hội thảo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {conferencesFields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative space-y-4 rounded-md border p-4"
+              >
+                <FormField
+                  control={control}
+                  name={`conferences.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên hội nghị/hội thảo:</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên hội nghị/hội thảo..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`conferences.${index}.detail`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi tiết:</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} placeholder="Nhập chi tiết..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {conferencesFields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => removeConferences(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Xóa mục</span>
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendConferences({ name: '', detail: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm hội nghị/hội thảo
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              9. CÁC SẢN PHẨM CỦA CHƯƠNG TRÌNH CỘNG ĐỒNG
+            </CardTitle>
+            <CardDescription>
+              Mô tả các sản phẩm thuộc chương trình cộng đồng.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {communityProgramsFields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative space-y-4 rounded-md border p-4"
+              >
+                <FormField
+                  control={control}
+                  name={`communityPrograms.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên sản phẩm cộng đồng:</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên sản phẩm cộng đồng..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`communityPrograms.${index}.detail`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi tiết:</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} placeholder="Nhập chi tiết..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {communityProgramsFields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => removeCommunityPrograms(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Xóa mục</span>
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendCommunityPrograms({ name: '', detail: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm sản phẩm cộng đồng
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              10. ĐỂ ĐẠT ĐƯỢC DOANH THU THÌ CÓ KIẾN NGHỊ VÀ ĐỀ XUẤT GÌ KHÔNG
+            </CardTitle>
+            <CardDescription>
+              Đưa ra các kiến nghị và đề xuất để đạt được doanh thu mục tiêu.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {revenueRecommendationsFields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative space-y-4 rounded-md border p-4"
+              >
+                <FormField
+                  control={control}
+                  name={`revenueRecommendations.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên kiến nghị/đề xuất:</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên kiến nghị/đề xuất..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`revenueRecommendations.${index}.detail`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi tiết:</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} placeholder="Nhập chi tiết..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {revenueRecommendationsFields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="no-print absolute -right-2 -top-2 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => removeRevenueRecommendations(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Xóa mục</span>
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="no-print"
+              onClick={() => appendRevenueRecommendations({ name: '', detail: '' })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Thêm kiến nghị/đề xuất
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">
+              11. CAM KẾT CỦA TRƯỞNG ĐƠN VỊ
             </CardTitle>
           </CardHeader>
           <CardContent>

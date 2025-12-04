@@ -42,6 +42,12 @@ const bscItemSchema = z.object({
   kpi: z.string(),
 });
 
+// Schema cho các nội dung mới (mỗi item có name và detail)
+const contentItemSchema = z.object({
+  name: z.string(),
+  detail: z.string(),
+});
+
 // This schema is used for the final submission validation on the server.
 const fileMetadataSchema = z
   .object({
@@ -99,6 +105,15 @@ const planFormSchema = z.object({
   investment: z.string().optional(),
   financialForecastFile: fileMetadataSchema,
 
+  // Nội dung mới 6-10
+  professionalOrientation: z.array(contentItemSchema),
+  strategicProducts: z.array(contentItemSchema),
+  newServices2026: z.array(contentItemSchema),
+  recruitment: z.array(contentItemSchema),
+  conferences: z.array(contentItemSchema),
+  communityPrograms: z.array(contentItemSchema),
+  revenueRecommendations: z.array(contentItemSchema),
+
   // Commitment
   commitment: z.boolean().refine((val) => val === true, {
     message: 'Bạn phải cam kết để gửi kế hoạch.',
@@ -125,6 +140,13 @@ export async function submitPlanAction(data: z.infer<typeof planFormSchema>) {
       bsc: validatedData.bscItems,
       action_plans: validatedData.actionPlans,
       financial_forecast: financialForecast,
+      professional_orientation: validatedData.professionalOrientation,
+      strategic_products: validatedData.strategicProducts,
+      new_services_2026: validatedData.newServices2026,
+      recruitment: validatedData.recruitment,
+      conferences: validatedData.conferences,
+      community_programs: validatedData.communityPrograms,
+      revenue_recommendations: validatedData.revenueRecommendations,
       commitment: validatedData.commitment,
     });
 
