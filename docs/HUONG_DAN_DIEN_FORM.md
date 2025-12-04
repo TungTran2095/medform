@@ -296,6 +296,11 @@ Mô tả các kế hoạch đầu tư lớn trong năm 2026.
 #### **Tệp đính kèm (tùy chọn)**
 Có thể đính kèm file Excel, Word, PDF chứa bảng dự báo tài chính chi tiết.
 
+**Yêu cầu:**
+- Tối đa **3 file** mỗi lần submit
+- Có thể chọn nhiều file cùng lúc hoặc thêm từng file một
+- Có thể xóa từng file trước khi submit
+
 **Định dạng hỗ trợ:**
 - PDF (.pdf)
 - Word (.doc, .docx)

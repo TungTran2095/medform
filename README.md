@@ -46,6 +46,23 @@ npm run dev
 Ứng dụng sử dụng Supabase để lưu trữ dữ liệu. Xem file migration trong thư mục `supabase/`:
 - `setup.sql` - Tạo bảng ban đầu
 - `add_new_columns.sql` - Thêm các cột mới cho các tính năng 6-10
+- `setup_storage.sql` - Thiết lập Storage bucket và policies cho file upload
+
+### Thiết lập Supabase Storage
+
+Để sử dụng tính năng upload file dự báo tài chính:
+
+1. **Tạo bucket trong Supabase Dashboard:**
+   - Vào Supabase Dashboard > Storage
+   - Click "New bucket"
+   - Tên bucket: `financial-forecasts`
+   - Public bucket: **BẬT** (để có thể truy cập file qua URL)
+   - File size limit: Tùy chọn (khuyến nghị: 10MB)
+   - Allowed MIME types: `application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+
+2. **Chạy script SQL:**
+   - Mở Supabase SQL Editor
+   - Chạy file `supabase/setup_storage.sql` để tạo policies
 
 ## 📝 License
 

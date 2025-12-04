@@ -54,9 +54,17 @@ const fileMetadataSchema = z
     name: z.string(),
     size: z.number(),
     type: z.string().optional().nullable(),
+    url: z.string().optional(), // URL của file trong Supabase Storage
   })
   .nullable()
   .optional();
+
+// Schema cho mảng file (tối đa 3 file)
+const fileMetadataArraySchema = z
+  .array(fileMetadataSchema)
+  .max(3, 'Tối đa 3 file được phép upload.')
+  .optional()
+  .nullable();
 
 const planFormSchema = z.object({
   unitName: z.string().min(1, 'Unit name is required.'),
@@ -103,7 +111,7 @@ const planFormSchema = z.object({
   costs: z.string().min(1, 'Costs are required.'),
   profit: z.string().min(1, 'Profit is required.'),
   investment: z.string().optional(),
-  financialForecastFile: fileMetadataSchema,
+  financialForecastFile: fileMetadataArraySchema, // Mảng file, tối đa 3 file
 
   // Nội dung mới 6-10
   professionalOrientation: z.array(contentItemSchema),
@@ -120,6 +128,54 @@ const planFormSchema = z.object({
   }),
 });
 
+// Upload file lên Supabase Storage
+export async function uploadFinancialForecastFile(file: File) {
+  try {
+    const supabase = getSupabaseClient();
+    
+    // Tạo tên file unique với timestamp và UUID
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 9);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${timestamp}-${randomId}.${fileExt}`;
+    const filePath = `forecasts/${fileName}`;
+
+    // Upload file lên Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('financial-forecasts')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) {
+      console.error('Error uploading file:', error);
+      return { success: false, message: error.message, url: null };
+    }
+
+    // Lấy public URL của file
+    const { data: urlData } = supabase.storage
+      .from('financial-forecasts')
+      .getPublicUrl(filePath);
+
+    return {
+      success: true,
+      url: urlData.publicUrl,
+      path: filePath,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    };
+  } catch (error: any) {
+    console.error('Error uploading file:', error);
+    return {
+      success: false,
+      message: error?.message || 'Không thể upload file.',
+      url: null,
+    };
+  }
+}
+
 export async function submitPlanAction(data: z.infer<typeof planFormSchema>) {
   try {
     const validatedData = planFormSchema.parse(data);
@@ -130,7 +186,7 @@ export async function submitPlanAction(data: z.infer<typeof planFormSchema>) {
       costs: validatedData.costs,
       profit: validatedData.profit,
       investment: validatedData.investment || '',
-      attachment: validatedData.financialForecastFile ?? null,
+      attachment: validatedData.financialForecastFile ?? null, // Mảng file metadata
     };
 
     const { error } = await supabase.from('plan_responses').insert({

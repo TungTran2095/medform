@@ -16,7 +16,7 @@ import {
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-import { submitPlanAction, getDonViList, type DonViItem } from '@/app/actions';
+import { submitPlanAction, getDonViList, uploadFinancialForecastFile, type DonViItem } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -128,7 +128,7 @@ const formSchema = z.object({
   costs: z.string().min(1, { message: 'Vui lòng nhập tổng chi phí dự kiến.' }),
   profit: z.string().min(1, { message: 'Vui lòng nhập lợi nhuận dự kiến.' }),
   investment: z.string().optional(),
-  financialForecastFile: z.any().optional().nullable(),
+  financialForecastFile: z.array(z.any()).max(3, 'Tối đa 3 file được phép upload.').optional().nullable(),
 
   // Nội dung mới 6-10
   professionalOrientation: z.array(contentItemSchema), // 6. Định hướng chuyên môn và mũi nhọn chuyên môn
@@ -179,7 +179,7 @@ export function PlanForm() {
       costs: '',
       profit: '',
       investment: '',
-      financialForecastFile: null,
+      financialForecastFile: [],
       professionalOrientation: [],
       strategicProducts: [],
       newServices2026: [],
@@ -192,7 +192,7 @@ export function PlanForm() {
   });
 
   const { control, formState, watch, setValue, trigger } = form;
-  const financialFile = watch('financialForecastFile');
+  const financialFiles = watch('financialForecastFile') || [];
   const unitName = watch('unitName');
 
   // Load danh sách đơn vị khi component mount
@@ -290,18 +290,46 @@ export function PlanForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const fileMeta = values.financialForecastFile
-        ? {
-            name: values.financialForecastFile.name,
-            size: values.financialForecastFile.size,
-            type: values.financialForecastFile.type,
+      let fileMetaArray: Array<{
+        name: string;
+        size: number;
+        type: string | null;
+        url: string;
+      }> = [];
+
+      // Upload tất cả file lên Supabase Storage nếu có
+      if (values.financialForecastFile && values.financialForecastFile.length > 0) {
+        toast({
+          title: 'Đang upload file...',
+          description: `Đang upload ${values.financialForecastFile.length} file, vui lòng đợi.`,
+        });
+
+        // Upload từng file
+        for (const file of values.financialForecastFile) {
+          const uploadResult = await uploadFinancialForecastFile(file);
+
+          if (!uploadResult.success) {
+            toast({
+              variant: 'destructive',
+              title: 'Lỗi upload file',
+              description: `Không thể upload file "${file.name}". ${uploadResult.message || 'Vui lòng thử lại.'}`,
+            });
+            return;
           }
-        : null;
+
+          fileMetaArray.push({
+            name: uploadResult.name,
+            size: uploadResult.size,
+            type: uploadResult.type,
+            url: uploadResult.url,
+          });
+        }
+      }
 
       const payload = {
         ...values,
         investment: values.investment || '',
-        financialForecastFile: fileMeta,
+        financialForecastFile: fileMetaArray.length > 0 ? fileMetaArray : null,
       };
 
       const result = await submitPlanAction(payload as any);
@@ -890,53 +918,103 @@ export function PlanForm() {
               name="financialForecastFile"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tệp đính kèm (tùy chọn)</FormLabel>
+                  <FormLabel>
+                    Tệp đính kèm (tùy chọn, tối đa 3 file)
+                    {financialFiles.length > 0 && (
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        ({financialFiles.length}/3)
+                      </span>
+                    )}
+                  </FormLabel>
                   <FormControl>
-                    <div className="relative no-print">
-                      <Input
-                        type="file"
-                        className="hidden"
-                        id="file-upload"
-                        accept=".pdf,.doc,.docx,.xls,.xlsx"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            field.onChange(file);
-                          }
-                        }}
-                      />
-                      <label
-                        htmlFor="file-upload"
-                        className="flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-input p-6 text-center"
-                      >
-                        <UploadCloud className="mb-2 h-8 w-8 text-muted-foreground" />
-                        <span className="font-medium text-primary">
-                          Nhấp để tải lên
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          hoặc kéo và thả
-                        </span>
-                      </label>
+                    <div className="space-y-4">
+                      <div className="relative no-print">
+                        <Input
+                          type="file"
+                          className="hidden"
+                          id="file-upload"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx"
+                          multiple
+                          disabled={financialFiles.length >= 3}
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (files.length === 0) return;
+
+                            const currentFiles = field.value || [];
+                            const totalFiles = currentFiles.length + files.length;
+
+                            if (totalFiles > 3) {
+                              toast({
+                                variant: 'destructive',
+                                title: 'Quá nhiều file',
+                                description: `Chỉ được phép upload tối đa 3 file. Hiện tại đã có ${currentFiles.length} file.`,
+                              });
+                              return;
+                            }
+
+                            // Thêm file mới vào danh sách
+                            const newFiles = [...currentFiles, ...files];
+                            field.onChange(newFiles);
+                          }}
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className={`flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-input p-6 text-center ${
+                            financialFiles.length >= 3
+                              ? 'opacity-50 cursor-not-allowed'
+                              : 'hover:border-primary'
+                          }`}
+                        >
+                          <UploadCloud className="mb-2 h-8 w-8 text-muted-foreground" />
+                          <span className="font-medium text-primary">
+                            {financialFiles.length >= 3
+                              ? 'Đã đạt giới hạn 3 file'
+                              : 'Nhấp để tải lên'}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {financialFiles.length >= 3
+                              ? 'Vui lòng xóa file để thêm file mới'
+                              : 'hoặc kéo và thả (PDF, Word, Excel)'}
+                          </span>
+                        </label>
+                      </div>
+                      {financialFiles.length > 0 && (
+                        <div className="space-y-2">
+                          {financialFiles.map((file: File, index: number) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between rounded-md border bg-muted/50 p-3"
+                            >
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <FileIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                                <span className="text-sm font-medium truncate">
+                                  {file.name}
+                                </span>
+                                <span className="text-xs text-muted-foreground flex-shrink-0">
+                                  ({(file.size / 1024).toFixed(1)} KB)
+                                </span>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 no-print flex-shrink-0"
+                                onClick={() => {
+                                  const newFiles = financialFiles.filter(
+                                    (_: File, i: number) => i !== index
+                                  );
+                                  field.onChange(newFiles);
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Xóa tệp</span>
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </FormControl>
-                  {financialFile && (
-                    <div className="mt-4 flex items-center justify-between rounded-md border bg-muted/50 p-3">
-                      <div className="flex items-center gap-2">
-                        <FileIcon className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-sm font-medium">{financialFile.name}</span>
-                      </div>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-6 w-6 no-print"
-                        onClick={() => setValue('financialForecastFile', null)}
-                      >
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Xóa tệp</span>
-                      </Button>
-                    </div>
-                  )}
                   <FormMessage />
                 </FormItem>
               )}
