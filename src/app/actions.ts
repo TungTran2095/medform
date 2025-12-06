@@ -10,6 +10,10 @@ import {
   suggestRelevantKPIs,
   type SuggestRelevantKPIsInput,
 } from '@/ai/flows/suggest-relevant-kpis';
+import {
+  summarizeContent,
+  type SummarizeContentInput,
+} from '@/ai/flows/summarize-content';
 
 // Tạo Supabase client cho server-side
 function getSupabaseClient() {
@@ -240,9 +244,100 @@ export async function suggestKPIsAction(input: SuggestRelevantKPIsInput) {
   }
 }
 
+export async function summarizeContentAction(input: SummarizeContentInput) {
+  try {
+    const result = await summarizeContent(input);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error summarizing content:', error);
+    return { success: false, message: 'Không thể tóm tắt nội dung.' };
+  }
+}
+
 export interface DonViItem {
   Don_vi: string;
   Ho_va_ten: string;
+}
+
+// Tạo Supabase client với service_role để đọc dữ liệu (bypass RLS)
+function getSupabaseServiceClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL');
+  }
+
+  // Nếu có service_role key, sử dụng nó để bypass RLS
+  if (supabaseServiceKey) {
+    return createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  }
+
+  // Nếu không có, fallback về anon key (có thể sẽ fail nếu RLS không cho phép)
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseAnonKey) {
+    throw new Error('Missing Supabase keys');
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
+
+export interface PlanResponse {
+  id: string;
+  created_at: string;
+  unit_name: string;
+  unit_type: string | null;
+  unit_leader: string;
+  planner: string | null;
+  swot: any;
+  bsc: any;
+  action_plans: any;
+  financial_forecast: any;
+  professional_orientation: any;
+  strategic_products: any;
+  new_services_2026: any;
+  recruitment: any;
+  conferences: any;
+  community_programs: any;
+  revenue_recommendations: any;
+  commitment: boolean;
+}
+
+export async function getAllPlanResponses() {
+  try {
+    const supabase = getSupabaseServiceClient();
+
+    const { data, error } = await supabase
+      .from('plan_responses')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching plan_responses:', error);
+      return {
+        success: false,
+        data: [],
+        error: error.message,
+      };
+    }
+
+    return {
+      success: true,
+      data: (data || []) as PlanResponse[],
+    };
+  } catch (error: any) {
+    console.error('Error fetching plan_responses:', error);
+    return {
+      success: false,
+      data: [],
+      error: error?.message || 'Không thể lấy dữ liệu từ database.',
+    };
+  }
 }
 
 export async function getDonViList() {

@@ -76,3 +76,4 @@ Mỗi file có tên unique được tạo từ timestamp và random ID để tr�
 - Kiểm tra file size limit của bucket
 - Tăng file size limit trong bucket settings nếu cần
 
+
